@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"sync/atomic"
@@ -10,33 +9,6 @@ import (
 type apiConfig struct {        //storing config setting fo interaction with api
 	fileserverHits atomic.Int32     //atomic.Int32   provide a thread safe operation on 32bit int so there is no changes that can occure like go routines and so on
 	
-}
-
-
-func (cfg *apiConfig) middlewareFileserverHits(next http.Handler) http.Handler {     //methods that add other functionality to fileserver that add a hit fo evry request to fs
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		cfg.fileserverHits.Add(1)
-		next.ServeHTTP(w,r)                                               //calls the next handeler
-	})
-}
-
-func handlerReadiness(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Content-Type", "text/plain; charset=utf-8\r\n")
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(http.StatusText(http.StatusOK)))
-}
-
-func (cfg *apiConfig) getHits(w http.ResponseWriter, r *http.Request)  {      //get th enubmer of reauests as a hits and return it a sa response
-	w.Header().Add("Content-Type", "text/plain; charset=utf-8\r\n")
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Hits: "+ fmt.Sprintf("%d",cfg.fileserverHits.Load())))
-}
-
-func (cfg *apiConfig) resetHits(w http.ResponseWriter, r *http.Request) {      //reset the hits to 0
-	cfg.fileserverHits.Store(0)
-	w.Header().Add("Content-Type", "text/plain; charset=utf-8\r\n")
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Hits reset to  0\r\n"))
 }
 
 
@@ -51,9 +23,10 @@ func main() {
 	
 
 	mux.Handle("/app/", http.StripPrefix("/app",apicfg.middlewareFileserverHits(fs)))  // handel the resuest and uses the stripprefixto rmove "/app" and add it to middlewar to wrap the file server and add the hit for every request to fs
-	mux.HandleFunc("GET /healthz", handlerReadiness)
-	mux.HandleFunc("GET /metrics",apicfg.getHits)
-	mux.HandleFunc("POST /reset",apicfg.resetHits)
+	mux.HandleFunc("GET /api/healthz", handlerReadiness)
+	mux.HandleFunc("GET /admin/metrics",apicfg.getHits)
+	mux.HandleFunc("POST /admin/reset",apicfg.resetHits)
+	mux.HandleFunc("POST /api/validate_chirp",apicfg.handelervalidatechirp)
 	
 	srv := &http.Server{
 		Addr:    ":" + port,
