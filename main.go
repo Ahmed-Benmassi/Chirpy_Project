@@ -1,14 +1,22 @@
 package main
 
 import (
+	"database/sql"
 	"log"
 	"net/http"
+	"os"
 	"sync/atomic"
+
+	"github.com/Ahmed-Benmassi/chirpy_Project/internal/database"
+	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
 )
+
+
 
 type apiConfig struct {        //storing config setting fo interaction with api
 	fileserverHits atomic.Int32     //atomic.Int32   provide a thread safe operation on 32bit int so there is no changes that can occure like go routines and so on
-	
+	db             *database.Queries
 }
 
 
@@ -17,8 +25,24 @@ func main() {
 	const filepathRoot = "."
 	const port = "8080"
 
+	godotenv.Load()
+	dbURL := os.Getenv("DB_URL")
+	if dbURL == "" {
+		log.Fatal("DB_URL must be set")
+	}
+
+	dbConn, err := sql.Open("postgres", dbURL)
+	if err != nil {
+		log.Fatalf("Error opening database: %s", err)
+	}
+	dbQueries := database.New(dbConn)
+
 	mux := http.NewServeMux()                  //// NewServeMux allocates and returns a new [ServeMux]
-	apicfg:=&apiConfig{}                          // create an instance of apiConfig to store the hits and use it in the handlers
+	
+	apicfg:=apiConfig{                             // create an instance of apiConfig to store the hits and use it in the handlers
+		fileserverHits: atomic.Int32{},
+		db:             dbQueries,
+	}                                           
 	fs:=http.FileServer(http.Dir(filepathRoot))    // FileServer returns a handler that serves HTTP requests with the contents of the file system rooted at root.
 	
 
