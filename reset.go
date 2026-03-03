@@ -1,7 +1,7 @@
 package main
 
 import (
-
+	"log"
 	"net/http"
 )
 
@@ -19,7 +19,7 @@ func (cfg *apiConfig) resetHits(w http.ResponseWriter, r *http.Request) {      /
 
 func (cfg *apiConfig) adminResethandler(w http.ResponseWriter, r *http.Request) {   
 
-	if cfg.platform == "dev" {
+	if cfg.platform != "dev" {
 		http.Error(w,"forbidden",http.StatusForbidden)
 		return
 	}
@@ -27,10 +27,13 @@ func (cfg *apiConfig) adminResethandler(w http.ResponseWriter, r *http.Request) 
 	ctx:=r.Context()
 
 	if err:=cfg.db.DeleteAllUsers(ctx);err!=nil{
+		log.Printf("failed to delete  user users: %v\n", err)
 		http.Error(w,"failed to delete users",http.StatusInternalServerError)
 		return
 	}
 
-	w.WriteHeader(http.StatusNoContent)
+	w.Header().Set("Content-Type", "text/plain")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("All users deleted successfully\n"))
 
 }    

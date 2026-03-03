@@ -20,6 +20,7 @@ type apiConfig struct {        //storing config setting fo interaction with api
 	fileserverHits atomic.Int32     //atomic.Int32   provide a thread safe operation on 32bit int so there is no changes that can occure like go routines and so on
 	db             *database.Queries
 	platform        string
+	jwtSecret      string
 }
 
 
@@ -48,6 +49,11 @@ func main() {
 	if dbURL == "" {
 		log.Fatal("DB_URL must be set")
 	}
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		log.Fatal("JWT_SECRET environment variable is not set")
+	}
+
 
 	dbConn, err := sql.Open("postgres", dbURL)
 	if err != nil {
@@ -58,10 +64,7 @@ func main() {
 
 	platform := os.Getenv("PLATFORM")
 
-    cfg := &apiConfig{
-		db: database.New(dbConn),
-		platform:  platform,
-	}
+
 
 
 
@@ -70,6 +73,8 @@ func main() {
 	apicfg:=apiConfig{                             // create an instance of apiConfig to store the hits and use it in the handlers
 		fileserverHits: atomic.Int32{},
 		db:             dbQueries,
+		platform:  platform,
+		jwtSecret :     jwtSecret,
 	}                                           
 	fs:=http.FileServer(http.Dir(filepathRoot))    // FileServer returns a handler that serves HTTP requests with the contents of the file system rooted at root.
 	
@@ -79,11 +84,11 @@ func main() {
 	mux.HandleFunc("GET /admin/metrics",apicfg.getHits)
 	mux.HandleFunc("POST /admin/reset",apicfg.resetHits)
 	mux.HandleFunc("GET /api/chirps", apicfg.listChirpsHandler)   // new GET endpoint
-	mux.HandleFunc("/admin/reset", cfg.adminResethandler)
+	mux.HandleFunc("GET /admin/reset", apicfg.adminResethandler)
 	mux.HandleFunc("POST /api/users", apicfg.handlerCreateUser)
 	mux.HandleFunc("POST /api/chirps", apicfg.createChirpHandler)
     mux.HandleFunc("GET /api/chirps/{chirpID}",apicfg.getsinglechirphandeler)
-	
+	mux.HandleFunc("POST /api/login",apicfg.loginHandler)
 	
 	srv := &http.Server{
 		Addr:    ":" + port,

@@ -5,12 +5,14 @@ import (
 	"log"
 	"net/http"
 
-	
+	"github.com/Ahmed-Benmassi/chirpy_Project/internal/auth"
+	"github.com/Ahmed-Benmassi/chirpy_Project/internal/database"
 )
 
 func (cfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request){   // handel the request to create a new user and return the created user in json format
 	var req struct{
 		Email string `json:"email"`
+		Password string `json:"password"`
 	}
 
 	if err:=json.NewDecoder(r.Body).Decode(&req); err!=nil{
@@ -18,9 +20,27 @@ func (cfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request){
 	    return
 	}
 
+	// 3️⃣ Validate inputs
+	if req.Email == "" || req.Password == "" {
+		http.Error(w, "email and password are required", http.StatusBadRequest)
+		return
+	}
+
 	ctx:=r.Context()
 
-	dbUser,err:=cfg.db.CreateUser(ctx,req.Email)
+	hashedPassword, err := auth.HashPassword(req.Password)
+	if err != nil {
+		log.Printf("failed to hash password: %v\n", err)
+		http.Error(w, "failed to create user", http.StatusInternalServerError)
+		return
+	}
+
+
+	dbUser,err:=cfg.db.CreateUser(ctx,database.CreateUserParams{
+		Email:          req.Email,
+		HashedPassword: hashedPassword,
+	})
+	
 	if err!=nil{
 		log.Printf("failed to create user with email %s: %v\n", req.Email, err)
 		http.Error(w,"failed to create user",http.StatusInternalServerError)

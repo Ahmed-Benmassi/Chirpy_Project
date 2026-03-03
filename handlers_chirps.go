@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/Ahmed-Benmassi/chirpy_Project/internal/auth"
 	"github.com/Ahmed-Benmassi/chirpy_Project/internal/database"
 	"github.com/google/uuid"
 )
@@ -16,7 +17,22 @@ func (cfg *apiConfig) createChirpHandler(w http.ResponseWriter, r *http.Request)
 		UserID uuid.UUID `json:"user_id"`
 	}
 
+
 	var req ChirpRequest
+
+	token, err := auth.GetBearerToken(r.Header)
+	if err != nil {
+		http.Error(w, "Couldn't find JWT", http.StatusUnauthorized)
+		return
+	}
+	userID, err := auth.ValidateJWT(token, cfg.jwtSecret)
+	if err != nil {
+		http.Error(w, "Couldn't validate JWT", http.StatusUnauthorized)
+		return
+	}
+
+
+
 
 	// 2️⃣ Decode JSON
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -35,7 +51,7 @@ func (cfg *apiConfig) createChirpHandler(w http.ResponseWriter, r *http.Request)
 	// 4️⃣ Insert chirp using SQLC CreateChirp
 	dbChirp, err := cfg.db.CreateChirp(ctx, database.CreateChirpParams{
 		Body:   req.Body,
-		UserID: req.UserID,
+		UserID: userID,
 	})
 	if err != nil {
 		http.Error(w, "Failed to create chirp", http.StatusInternalServerError)
