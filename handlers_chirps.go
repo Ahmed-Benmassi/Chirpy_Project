@@ -10,7 +10,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func (cfg *apiConfig) createChirpHandler(w http.ResponseWriter, r *http.Request) {
+func (cfg *apiConfig) createChirpHandler(w http.ResponseWriter, r *http.Request) {                // createChirpHandler is an HTTP handler function that processes incoming requests to create a new chirp. It performs several steps: defining the expected request payload, decoding the JSON body, validating the chirp content, inserting the chirp into the database using SQLC, mapping the database chirp to an API response struct, and finally responding with a JSON representation of the created chirp along with an HTTP 201 status code.
 	// 1️⃣ Define request payload
 	type ChirpRequest struct {
 		Body   string    `json:"body"`
@@ -59,7 +59,7 @@ func (cfg *apiConfig) createChirpHandler(w http.ResponseWriter, r *http.Request)
 	}
 
 	// 5️⃣ Map to API Chirp struct
-	chirp := Chirp{
+	chirp := Chirp{                                                                        // map the database chirp to the API response struct
 		ID:        dbChirp.ID,
 		CreatedAt: dbChirp.CreatedAt,
 		UpdatedAt: dbChirp.UpdatedAt,
@@ -74,18 +74,18 @@ func (cfg *apiConfig) createChirpHandler(w http.ResponseWriter, r *http.Request)
 }
 
 
-func (cfg *apiConfig) listChirpsHandler(w http.ResponseWriter, r *http.Request) {
+func (cfg *apiConfig) listChirpsHandler(w http.ResponseWriter, r *http.Request) {                      // listChirpsHandler is an HTTP handler function that retrieves all chirps from the database, maps them to the API response struct, and responds with a JSON array of chirps along with an HTTP 200 status code. It handles errors by responding with appropriate HTTP status codes and messages.
 
 
 	ctx := r.Context()
-	dbChirp,err:=cfg.db.ListALLChirps(ctx)
+	dbChirp,err:=cfg.db.ListALLChirps(ctx)                                                            // retrieve all chirps from the database using SQLC ListALLChirps
 	if err!=nil{
 		http.Error(w, "Failed to list chirps", http.StatusInternalServerError)
 		return 
 	}
 
-	chirps:=[]Chirp{}
-	for _,c:=range dbChirp{
+	chirps:=[]Chirp{} 
+	for _,c:=range dbChirp{                                                                       // map each database chirp to the API response struct and append to the chirps slice
 		chirps=append(chirps,Chirp{
 			ID:        c.ID,
             CreatedAt: c.CreatedAt,
@@ -101,8 +101,8 @@ func (cfg *apiConfig) listChirpsHandler(w http.ResponseWriter, r *http.Request) 
 	json.NewEncoder(w).Encode(chirps)
 }
 
-func(cfg *apiConfig) getsinglechirphandeler(w http.ResponseWriter, r *http.Request){
-	
+func(cfg *apiConfig) getsinglechirphandeler(w http.ResponseWriter, r *http.Request){                         // getsinglechirphandeler is an HTTP handler function that retrieves a single chirp by its ID from the database, maps it to the API response struct, and responds with a JSON representation of the chirp along with an HTTP 200 status code. It handles errors by responding with appropriate HTTP status codes and messages for invalid chirp IDs, not found chirps, and unexpected database errors.
+	 
 	ctx:=r.Context()
 	chirpIDString := r.PathValue("chirpID")
 	chirpID, err := uuid.Parse(chirpIDString)
@@ -124,7 +124,7 @@ func(cfg *apiConfig) getsinglechirphandeler(w http.ResponseWriter, r *http.Reque
         return
 	}
 
-	chirp:=Chirp{
+	chirp:=Chirp{                                                                                 // map the database chirp to the API response struct
 		ID:        dbChirp.ID,
 		CreatedAt: dbChirp.CreatedAt,
 		UpdatedAt: dbChirp.UpdatedAt,

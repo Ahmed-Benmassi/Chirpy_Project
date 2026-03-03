@@ -15,20 +15,20 @@ func (cfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request){
 		Password string `json:"password"`
 	}
 
-	if err:=json.NewDecoder(r.Body).Decode(&req); err!=nil{
-		http.Error(w,"invalid request body",http.StatusBadRequest)
+	if err:=json.NewDecoder(r.Body).Decode(&req); err!=nil{                        // decode the request body into the req struct
+		http.Error(w,"invalid request body",http.StatusBadRequest)                
 	    return
 	}
 
 	// 3️⃣ Validate inputs
-	if req.Email == "" || req.Password == "" {
+	if req.Email == "" || req.Password == "" {                                    // Check if email and password are provided
 		http.Error(w, "email and password are required", http.StatusBadRequest)
 		return
 	}
 
 	ctx:=r.Context()
 
-	hashedPassword, err := auth.HashPassword(req.Password)
+	hashedPassword, err := auth.HashPassword(req.Password)                          // Hash the password using the auth package
 	if err != nil {
 		log.Printf("failed to hash password: %v\n", err)
 		http.Error(w, "failed to create user", http.StatusInternalServerError)
@@ -36,7 +36,7 @@ func (cfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request){
 	}
 
 
-	dbUser,err:=cfg.db.CreateUser(ctx,database.CreateUserParams{
+	dbUser,err:=cfg.db.CreateUser(ctx,database.CreateUserParams{                     // Create a new user in the database using the database package
 		Email:          req.Email,
 		HashedPassword: hashedPassword,
 	})
@@ -49,7 +49,7 @@ func (cfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request){
 	
 
 	// Map database.User to main package User struct
-    user := User{
+    user := User{                                                         
         ID:        dbUser.ID,
         CreatedAt: dbUser.CreatedAt,
         UpdatedAt: dbUser.UpdatedAt,

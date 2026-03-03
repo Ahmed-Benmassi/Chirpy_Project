@@ -17,7 +17,7 @@ func (cfg *apiConfig) resetHits(w http.ResponseWriter, r *http.Request) {      /
 
 
 
-func (cfg *apiConfig) adminResethandler(w http.ResponseWriter, r *http.Request) {   
+func (cfg *apiConfig) adminResethandler(w http.ResponseWriter, r *http.Request) {      //reset all users in the database, only for dev environment
 
 	if cfg.platform != "dev" {
 		http.Error(w,"forbidden",http.StatusForbidden)
@@ -26,7 +26,7 @@ func (cfg *apiConfig) adminResethandler(w http.ResponseWriter, r *http.Request) 
 
 	ctx:=r.Context()
 
-	if err:=cfg.db.DeleteAllUsers(ctx);err!=nil{
+	if err:=cfg.db.DeleteAllUsers(ctx);err!=nil{                             //delete all users in the database
 		log.Printf("failed to delete  user users: %v\n", err)
 		http.Error(w,"failed to delete users",http.StatusInternalServerError)
 		return
