@@ -6,8 +6,10 @@ import (
 	"net/http"
 	"os"
 	"sync/atomic"
+	"time"
 
 	"github.com/Ahmed-Benmassi/chirpy_Project/internal/database"
+	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
@@ -17,8 +19,24 @@ import (
 type apiConfig struct {        //storing config setting fo interaction with api
 	fileserverHits atomic.Int32     //atomic.Int32   provide a thread safe operation on 32bit int so there is no changes that can occure like go routines and so on
 	db             *database.Queries
+	platform        string
 }
 
+
+type User struct {
+    ID        uuid.UUID `json:"id"`
+    CreatedAt time.Time `json:"created_at"`
+    UpdatedAt time.Time `json:"updated_at"`
+    Email     string    `json:"email"`
+}
+
+type Chirp struct {
+    ID        uuid.UUID `json:"id"`
+    CreatedAt time.Time `json:"created_at"`
+    UpdatedAt time.Time `json:"updated_at"`
+    Body      string    `json:"body"`
+    UserID    uuid.UUID `json:"user_id"`
+}
 
 
 func main() {
@@ -37,6 +55,16 @@ func main() {
 	}
 	dbQueries := database.New(dbConn)
 
+
+	platform := os.Getenv("PLATFORM")
+
+    cfg := &apiConfig{
+		db: database.New(dbConn),
+		platform:  platform,
+	}
+
+
+
 	mux := http.NewServeMux()                  //// NewServeMux allocates and returns a new [ServeMux]
 	
 	apicfg:=apiConfig{                             // create an instance of apiConfig to store the hits and use it in the handlers
@@ -45,12 +73,17 @@ func main() {
 	}                                           
 	fs:=http.FileServer(http.Dir(filepathRoot))    // FileServer returns a handler that serves HTTP requests with the contents of the file system rooted at root.
 	
-
+    
 	mux.Handle("/app/", http.StripPrefix("/app",apicfg.middlewareFileserverHits(fs)))  // handel the resuest and uses the stripprefixto rmove "/app" and add it to middlewar to wrap the file server and add the hit for every request to fs
 	mux.HandleFunc("GET /api/healthz", handlerReadiness)
 	mux.HandleFunc("GET /admin/metrics",apicfg.getHits)
 	mux.HandleFunc("POST /admin/reset",apicfg.resetHits)
-	mux.HandleFunc("POST /api/validate_chirp",apicfg.handelervalidatechirp)
+	mux.HandleFunc("GET /api/chirps", apicfg.listChirpsHandler)   // new GET endpoint
+	mux.HandleFunc("/admin/reset", cfg.adminResethandler)
+	mux.HandleFunc("POST /api/users", apicfg.handlerCreateUser)
+	mux.HandleFunc("POST /api/chirps", apicfg.createChirpHandler)
+    mux.HandleFunc("GET /api/chirps/{chirpID}",apicfg.getsinglechirphandeler)
+	
 	
 	srv := &http.Server{
 		Addr:    ":" + port,
