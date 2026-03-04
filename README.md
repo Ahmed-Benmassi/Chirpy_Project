@@ -60,9 +60,12 @@
 ### Create a .env file:
 
 <pre> DB_URL=postgres://postgres:secret@localhost:5432/chirpy_db?sslmode=disable
-JWT_SECRET=supersecretkey
-PLATFORM=dev
-POLKA_KEY=webhook_secret </pre>
+
+    JWT_SECRET=supersecretkey
+
+    PLATFORM=dev
+
+    POLKA_KEY=webhook_secret </pre>
 
 ## 5. Install Dependencies
 
@@ -74,7 +77,7 @@ POLKA_KEY=webhook_secret </pre>
 
 ### Server runs at:
 
-http://localhost:8080
+<pre> http://localhost:8080</pre>
 
 # 📘 API Documentation
 
@@ -86,7 +89,7 @@ http://localhost:8080
 ----------------------------------------
 
 
-#👤 Users
+# 👤 Users
 ## Create User
 
 <pre> curl -X POST http://localhost:8080/api/users \
@@ -98,9 +101,9 @@ http://localhost:8080
 </pre>
 
   --------------------------------------------
-  # 🔐 Authentication
+  # 🔐Authentication
 
-##Login
+## Login
 
 <pre> curl -X POST http://localhost:8080/api/login \
   -H "Content-Type: application/json" \
@@ -188,19 +191,19 @@ http://localhost:8080
 -----------------------------------------------------------------------
 # 📌 Project Goals
 
-## -This project demonstrates:
+### -This project demonstrates:
 
-## -Understanding of HTTP request lifecycle
+### -Understanding of HTTP request lifecycle
 
-## -Manual routing without frameworks
+### -Manual routing without frameworks
 
-## -Secure authentication implementation
+### -Secure authentication implementation
 
-## -Database query design
+### -Database query design
 
-## -Clean API design
+### -Clean API design
 
-## -Production-style error handling
+### -Production-style error handling
 
 ------------------------------------------------------------
 #💡 Future Ideas
@@ -208,18 +211,18 @@ http://localhost:8080
 ## Integrate Chirpy with http_from_tcp Project
 
 ## Create a Go client that interacts with the Chirpy API to:
-   ###    -Make HTTP requests (GET, POST, DELETE, etc.)
-   ###    -Integrate with your HTTP_from_TCP project for raw TCP requests
-   ###     -Handle JSON responses automatically
-   ###    -Authenticate using JWT tokens
+   ####    -Make HTTP requests (GET, POST, DELETE, etc.)
+   ####   -Integrate with your HTTP_from_TCP project for raw TCP requests
+   ####     -Handle JSON responses automatically
+   ####    -Authenticate using JWT tokens
    
 ## Dockerize the Project for Easy Deployment
 ###       -Run the Chirpy server + PostgreSQL database with a single command.
 
-##Testing & CI/CD
-    ###   -Unit tests for handlers and services.
+## Testing & CI/CD
+###   -Unit tests for handlers and services.
 
-   ###    -GitHub Actions to build and test automatically.
+ ###    -GitHub Actions to build and test automatically.
    
    
    
