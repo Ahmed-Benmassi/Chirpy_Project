@@ -44,42 +44,43 @@
 
 ## 2. Install Go (1.20+)
 
-https://go.dev/dl/
+<pre> https://go.dev/dl/</pre>
 
 ### Verify:
 
-go version
+<pre>go version </pre>
 
 ## 3. Set Up PostgreSQL
 
 ### Create a database:
-createdb chirpy_db
+<pre> createdb chirpy_db </pre>
 
 ## 4. Environment Variables
 
 ### Create a .env file:
 
-DB_URL=postgres://postgres:secret@localhost:5432/chirpy_db?sslmode=disable
+<pre> DB_URL=postgres://postgres:secret@localhost:5432/chirpy_db?sslmode=disable
 JWT_SECRET=supersecretkey
 PLATFORM=dev
-POLKA_KEY=webhook_secret
+POLKA_KEY=webhook_secret </pre>
 
 ## 5. Install Dependencies
 
-go mod download
+<pre> go mod download </pre>
 
 ## 6. Run the Server
 
-go build -o out && ./out
+<pre> go build -o out && ./out </pre>
 
 ### Server runs at:
 
 http://localhost:8080
---------------------------------------------
+
 # 📘 API Documentation
 
 ## Base URL:
-http://localhost:8080/api/healthz
+
+<pre> http://localhost:8080/api/healthz</pre> 
 
 
 ----------------------------------------
@@ -88,86 +89,86 @@ http://localhost:8080/api/healthz
 #👤 Users
 ## Create User
 
-curl -X POST http://localhost:8080/api/users \
+<pre> curl -X POST http://localhost:8080/api/users \
   -H "Content-Type: application/json" \
   -d '{
     "email": "user@example.com",
     "password": "password123"
   }'
-
+</pre>
 
   --------------------------------------------
   # 🔐 Authentication
 
 ##Login
 
-curl -X POST http://localhost:8080/api/login \
+<pre> curl -X POST http://localhost:8080/api/login \
   -H "Content-Type: application/json" \
   -d '{
     "email": "user@example.com",
     "password": "password123"
   }'
-
+</pre>
   ## Response:
 
-  {
+  <pre>  {
   "token": "JWT_TOKEN"
-}
+} </pre>
 
 ### Use this token for protected routes:
 
-Authorization: Bearer JWT_TOKEN
+<pre> Authorization: Bearer JWT_TOKEN </pre>
 
 ---------------------------------------------------
 # 🐦 Chirps
 
 ## Create Chirp (Authenticated)
 
-curl -X POST http://localhost:8080/api/chirps \
+<pre> curl -X POST http://localhost:8080/api/chirps \
   -H "Authorization: Bearer JWT_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
     "body": "Hello Chirpy!"
-  }'
+  }' </pre>
 
 ## Get All Chirps
 
-curl http://localhost:8080/api/chirps
+<pre> curl http://localhost:8080/api/chirps </pre>
 
 ## Filter by Author
 
-curl "http://localhost:8080/api/chirps?author_id=USER_UUID"
+<pre> curl "http://localhost:8080/api/chirps?author_id=USER_UUID"</pre>
 
 
 ## Sort Chirps
 
 ### Ascending (default):
 
-curl "http://localhost:8080/api/chirps?sort=asc"
+<pre> curl "http://localhost:8080/api/chirps?sort=asc"</pre>
 
 ### Descending:
 
-curl "http://localhost:8080/api/chirps?sort=desc"
+<pre> curl "http://localhost:8080/api/chirps?sort=desc" </pre>
 
 ## Get Single Chirp
 
-curl http://localhost:8080/api/chirps/CHIRP_ID
+<pre> curl http://localhost:8080/api/chirps/CHIRP_ID</pre>
 
 ## Delete Chirp (Owner Only)
 
-curl -X DELETE http://localhost:8080/api/chirps/CHIRP_ID \
-  -H "Authorization: Bearer JWT_TOKEN"
+<pre> curl -X DELETE http://localhost:8080/api/chirps/CHIRP_ID \
+  -H "Authorization: Bearer JWT_TOKEN"</pre>
 
 ---------------------------------------------------------------
 # 🛡 Admin Endpoints (Development Only)
 
 ## Requires:
 
-PLATFORM=dev
+<pre> PLATFORM=dev</pre>
 
 ##  Reset Server Metrics:
 
-curl -X POST http://localhost:8080/admin/reset
+<pre> curl -X POST http://localhost:8080/admin/reset</pre>
 
 -----------------------------------------------------------------------
 # 🧠 Architecture Overview
