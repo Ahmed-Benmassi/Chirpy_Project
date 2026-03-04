@@ -89,8 +89,8 @@
 ----------------------------------------
 
 
-# 👤 Users
-## Create User
+## 👤 Users
+### Create User
 
 <pre> curl -X POST http://localhost:8080/api/users \
   -H "Content-Type: application/json" \
@@ -101,9 +101,9 @@
 </pre>
 
   --------------------------------------------
-  # 🔐Authentication
+  ## 🔐Authentication
 
-## Login
+### Login
 
 <pre> curl -X POST http://localhost:8080/api/login \
   -H "Content-Type: application/json" \
@@ -123,9 +123,9 @@
 <pre> Authorization: Bearer JWT_TOKEN </pre>
 
 ---------------------------------------------------
-# 🐦 Chirps
+## 🐦 Chirps
 
-## Create Chirp (Authenticated)
+### Create Chirp (Authenticated)
 
 <pre> curl -X POST http://localhost:8080/api/chirps \
   -H "Authorization: Bearer JWT_TOKEN" \
@@ -163,18 +163,18 @@
   -H "Authorization: Bearer JWT_TOKEN"</pre>
 
 ---------------------------------------------------------------
-# 🛡 Admin Endpoints (Development Only)
+## 🛡 Admin Endpoints (Development Only)
 
-## Requires:
+### Requires:
 
 <pre> PLATFORM=dev</pre>
 
-##  Reset Server Metrics:
+###  Reset Server Metrics:
 
 <pre> curl -X POST http://localhost:8080/admin/reset</pre>
 
 -----------------------------------------------------------------------
-# 🧠 Architecture Overview
+## 🧠 Architecture Overview
 
 ### -Standard library HTTP server
 
@@ -189,7 +189,7 @@
 ### -Explicit error handling
 
 -----------------------------------------------------------------------
-# 📌 Project Goals
+## 📌 Project Goals
 
 ### -This project demonstrates:
 
