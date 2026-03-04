@@ -39,8 +39,8 @@
 # 🚀 Getting Started
 ##  1. Clone the repository 
 
-git clone https://github.com/Ahmed-Benmassi/Chirpy_Project.git
-cd Chirpy_Project
+<pre> ```bash git clone https://github.com/Ahmed-Benmassi/Chirpy_Project.git   
+    cd Chirpy_Project  ``` </pre>
 
 ## 2. Install Go (1.20+)
 
