@@ -206,23 +206,23 @@
 ### -Production-style error handling
 
 ------------------------------------------------------------
-# 💡 Future Ideas
+## 💡 Future Ideas
 
-### Integrate Chirpy with http_from_tcp Project
+### Integrate Chirpy with http_from_tcp Project:
 
 ### Create a Go client that interacts with the Chirpy API to:
    ####    -Make HTTP requests (GET, POST, DELETE, etc.)
    ####   -Integrate with your HTTP_from_TCP project for raw TCP requests
    ####     -Handle JSON responses automatically
    ####    -Authenticate using JWT tokens
+
    
-### Dockerize the Project for Easy Deployment
-###       -Run the Chirpy server + PostgreSQL database with a single command.
+### Dockerize the Project for Easy Deployment:
+####       -Run the Chirpy server + PostgreSQL database with a single command.
 
-## Testing & CI/CD
-###   -Unit tests for handlers and services.
-
- ###    -GitHub Actions to build and test automatically.
+## Testing & CI/CD:
+####   -Unit tests for handlers and services.
+####    -GitHub Actions to build and test automatically.
    
    
    
