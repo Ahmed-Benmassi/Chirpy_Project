@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"net/http"
+	"sort"
 
 	"github.com/Ahmed-Benmassi/chirpy_Project/internal/auth"
 	"github.com/Ahmed-Benmassi/chirpy_Project/internal/database"
@@ -74,33 +75,6 @@ func (cfg *apiConfig) createChirpHandler(w http.ResponseWriter, r *http.Request)
 }
 
 
-func (cfg *apiConfig) listChirpsHandler(w http.ResponseWriter, r *http.Request) {                      // listChirpsHandler is an HTTP handler function that retrieves all chirps from the database, maps them to the API response struct, and responds with a JSON array of chirps along with an HTTP 200 status code. It handles errors by responding with appropriate HTTP status codes and messages.
-
-
-	ctx := r.Context()
-	dbChirp,err:=cfg.db.ListALLChirps(ctx)                                                            // retrieve all chirps from the database using SQLC ListALLChirps
-	if err!=nil{
-		http.Error(w, "Failed to list chirps", http.StatusInternalServerError)
-		return 
-	}
-
-	chirps:=[]Chirp{} 
-	for _,c:=range dbChirp{                                                                       // map each database chirp to the API response struct and append to the chirps slice
-		chirps=append(chirps,Chirp{
-			ID:        c.ID,
-            CreatedAt: c.CreatedAt,
-            UpdatedAt: c.UpdatedAt,
-            Body:      c.Body,
-            UserID:    c.UserID,
-		})
-	}
-	
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(chirps)
-}
-
 func(cfg *apiConfig) getsinglechirphandeler(w http.ResponseWriter, r *http.Request){                         // getsinglechirphandeler is an HTTP handler function that retrieves a single chirp by its ID from the database, maps it to the API response struct, and responds with a JSON representation of the chirp along with an HTTP 200 status code. It handles errors by responding with appropriate HTTP status codes and messages for invalid chirp IDs, not found chirps, and unexpected database errors.
 	 
 	ctx:=r.Context()
@@ -138,4 +112,66 @@ func(cfg *apiConfig) getsinglechirphandeler(w http.ResponseWriter, r *http.Reque
 
 
 
+}
+
+
+func authorIDFromRequest(r *http.Request) (uuid.UUID, error) {
+	authorIDString := r.URL.Query().Get("author_id")
+	if authorIDString == "" {
+		return uuid.Nil, nil
+	}
+	authorID, err := uuid.Parse(authorIDString)
+	if err != nil {
+		return uuid.Nil, err
+	}
+	return authorID, nil
+}
+
+func (cfg *apiConfig) handlerChirpsRetrieve(w http.ResponseWriter, r *http.Request) {
+	authorID, err := authorIDFromRequest(r)
+	ctx:=r.Context()
+	if err != nil {
+		http.Error(w, "Invalid author ID", http.StatusBadRequest)
+		return
+	}
+
+	var dbChirps []database.Chirp
+
+	if authorID != uuid.Nil {
+		dbChirps, err = cfg.db.GetChirpsByAuthor(ctx, authorID)
+	} else {
+		dbChirps, err = cfg.db.GetChirps(r.Context())
+	}
+	if err != nil {
+		http.Error(w, "Couldn't retrieve chirps", http.StatusInternalServerError)
+		return
+	}
+ 
+	sortDirection := "asc"                                                        
+	sortDirectionParam := r.URL.Query().Get("sort")                            
+	if sortDirectionParam == "desc" {
+		sortDirection = "desc"
+	}
+	chirps := []Chirp{}
+	for _, dbChirp := range dbChirps {
+		chirps = append(chirps, Chirp{
+			ID:        dbChirp.ID,
+			CreatedAt: dbChirp.CreatedAt,
+			UpdatedAt: dbChirp.UpdatedAt,
+			UserID:    dbChirp.UserID,
+			Body:      dbChirp.Body,
+		})
+	}
+
+
+	sort.Slice(chirps, func(i, j int) bool {
+		if sortDirection == "desc" {
+			return chirps[i].CreatedAt.After(chirps[j].CreatedAt)
+		}
+		return chirps[i].CreatedAt.Before(chirps[j].CreatedAt)
+	})
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(chirps)
 }

@@ -21,6 +21,7 @@ type apiConfig struct {        //storing config setting fo interaction with api
 	db             *database.Queries
 	platform        string
 	jwtSecret      string
+	polkaKey       string
 }
 
 
@@ -29,6 +30,8 @@ type User struct {                                   // User struct represents a
     CreatedAt time.Time `json:"created_at"`
     UpdatedAt time.Time `json:"updated_at"`
     Email     string    `json:"email"`
+	Password    string    `json:"-"`
+	IsChirpyRed bool      `json:"is_chirpy_red"`
 }
 
 type Chirp struct {                                     // Chirp struct represents a chirp in the system. It contains fields for the chirp's ID, creation and update timestamps, body text, and the ID of the user who created the chirp. 
@@ -54,6 +57,10 @@ func main() {
 	if jwtSecret == "" {                                                   // Get the JWT secret from the environment variable JWT_SECRET. This should be set to a secure random string that is used to sign and verify JSON Web Tokens (JWTs). If it is not set, the program will log a fatal error and exit.
 		log.Fatal("JWT_SECRET environment variable is not set")
 	}
+	polkaKey := os.Getenv("POLKA_KEY")                                    // Get the Polka API key from the environment variable POLKA_KEY. This should be set to a secure random string that is used to authenticate incoming webhook requests from Polka. If it is not set, the program will log a fatal error and exit.
+	if polkaKey == "" {
+		log.Fatal("POLKA_KEY environment variable is not set")
+	}
 
 
 	dbConn, err := sql.Open("postgres", dbURL)                         // sql.Open opens a database specified by its database driver name and a driver-specific data source name, usually consisting of at least a database name and connection information. In this case, it is opening a PostgreSQL database using the connection string provided in dbURL. If there is an error opening the database, it will log a fatal error and exit.
@@ -76,21 +83,33 @@ func main() {
 		db:             dbQueries,
 		platform:  platform,
 		jwtSecret :     jwtSecret,
+		polkaKey:       polkaKey,
 	}                                           
 	fs:=http.FileServer(http.Dir(filepathRoot))    // FileServer returns a handler that serves HTTP requests with the contents of the file system rooted at root.
 	
     
 	mux.Handle("/app/", http.StripPrefix("/app",apicfg.middlewareFileserverHits(fs)))  // handel the resuest and uses the stripprefixto rmove "/app" and add it to middlewar to wrap the file server and add the hit for every request to fs
 	mux.HandleFunc("GET /api/healthz", handlerReadiness)
+
+	mux.HandleFunc("POST /api/polka/webhooks", apicfg.handlerWebhook)
+
 	mux.HandleFunc("GET /admin/metrics",apicfg.getHits)
+
 	mux.HandleFunc("POST /admin/reset",apicfg.resetHits)
-	mux.HandleFunc("GET /api/chirps", apicfg.listChirpsHandler)   // new GET endpoint
 	mux.HandleFunc("GET /admin/reset", apicfg.adminResethandler)
+	
 	mux.HandleFunc("POST /api/users", apicfg.handlerCreateUser)
+	mux.HandleFunc("PUT /api/users", apicfg.handlerUpdate)
+	
 	mux.HandleFunc("POST /api/chirps", apicfg.createChirpHandler)
+	mux.HandleFunc("GET /api/chirps", apicfg.handlerChirpsRetrieve)
     mux.HandleFunc("GET /api/chirps/{chirpID}",apicfg.getsinglechirphandeler)
+    mux.HandleFunc("DELETE /api/chirps/{chirpID}", apicfg.handlerChirpsDelete)
+	
 	mux.HandleFunc("POST /api/login",apicfg.loginHandler)
+	
 	mux.HandleFunc("POST /api/refresh", apicfg.handlerRefresh)
+	
 	mux.HandleFunc("POST /api/revoke", apicfg.handlerRevoke)
 	
 	srv := &http.Server{

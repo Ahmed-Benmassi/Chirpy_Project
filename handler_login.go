@@ -84,6 +84,7 @@ func (cfg *apiConfig) loginHandler(w http.ResponseWriter, r *http.Request) {    
 		Email     string `json:"email"`
 		Token        string `json:"token"`
 		RefreshToken string `json:"refresh_token"`
+		IsChirpyRed bool      `json:"is_chirpy_red"`
 	}{
 		ID:        dbUser.ID.String(),
 		CreatedAt: dbUser.CreatedAt.Format("2006-01-02T15:04:05Z"),
@@ -91,6 +92,7 @@ func (cfg *apiConfig) loginHandler(w http.ResponseWriter, r *http.Request) {    
 		Email:     dbUser.Email,
 		Token:     accessToken,
 		RefreshToken: refreshToken,
+		IsChirpyRed: dbUser.IsChirpyRed,
 	}
 
 	// 6️⃣ Return response
